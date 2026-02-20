@@ -23,7 +23,6 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    // ✅ List comments for an article (public: VISIBLE + enabled only)
     @GetMapping("/articles/{articleId}/comments")
     public ResponseEntity<List<CommentDto>> findByArticle(
             @PathVariable Long articleId,
@@ -32,7 +31,6 @@ public class CommentController {
         return ResponseEntity.ok(commentService.findByArticle(articleId, pageable));
     }
 
-    // ✅ Create comment for an article
     @PostMapping("/articles/{articleId}/comments")
     public ResponseEntity<CommentDto> create(
             @PathVariable Long articleId,
@@ -43,13 +41,11 @@ public class CommentController {
         return ResponseEntity.created(location).body(created);
     }
 
-    // ✅ Read single comment
     @GetMapping("/comments/{id}")
     public ResponseEntity<CommentDto> findById(@PathVariable Long id) {
         return ResponseEntity.ok(commentService.findById(id));
     }
 
-    // ✅ Update comment (owner or admin)
     @PutMapping("/comments/{id}")
     public ResponseEntity<CommentDto> update(
             @PathVariable Long id,
@@ -58,7 +54,6 @@ public class CommentController {
         return ResponseEntity.ok(commentService.update(id, req));
     }
 
-    // ✅ Delete comment (soft delete) (owner or admin)
     @DeleteMapping("/comments/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         commentService.delete(id);

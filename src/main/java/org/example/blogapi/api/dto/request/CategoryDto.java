@@ -13,11 +13,6 @@ public class CategoryDto {
     @Length(min = 2, max = 120)
     private String name;
 
-    @Length(max = 500)
-    private String description;
-
-    private boolean enabled = true;
-
     private String slug;
 
 }

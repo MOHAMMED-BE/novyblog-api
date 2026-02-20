@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,13 +21,6 @@ import java.util.List;
 public class ArticleController {
 
     private final ArticleService articleService;
-
-    /*
-    @GetMapping
-    public ResponseEntity<List<ArticleDto>> findAll(Pageable pageable) {
-        return ResponseEntity.ok(articleService.findAll(pageable));
-    }
-    */
 
     @GetMapping
     public ResponseEntity<org.springframework.data.domain.Page<ArticleDto>> findAll(
@@ -53,7 +45,6 @@ public class ArticleController {
         return ResponseEntity.ok(articleService.findBySlug(slug));
     }
 
-    // IMPORTANT: consumes multipart/form-data
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ArticleDto> create(@Valid @ModelAttribute ArticleUpsertRequest req) {
         ArticleDto created = articleService.create(req);

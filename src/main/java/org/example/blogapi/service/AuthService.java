@@ -68,7 +68,6 @@ public class AuthService {
                 .email(request.email().toLowerCase())
                 .password(passwordEncoder.encode(request.password()))
                 .roles(Set.of(Role.USER)) // default role
-                .enabled(true)
                 .accountNonLocked(true)
                 .build();
 

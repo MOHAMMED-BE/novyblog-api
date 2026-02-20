@@ -16,8 +16,7 @@ import java.util.stream.Collectors;
 @Table(
         name = "users",
         indexes = {
-                @Index(name = "idx_users_email", columnList = "email", unique = true),
-                @Index(name = "idx_users_enabled", columnList = "enabled")
+                @Index(name = "idx_users_email", columnList = "email", unique = true)
         }
 )
 @Getter
@@ -33,30 +32,13 @@ public class User extends TraceableEntity implements UserDetails {
     @Column(nullable = false, length = 180, unique = true)
     private String email;
 
-    /**
-     * Store only hashed passwords (BCrypt/Argon2). Never store raw password.
-     */
     @Column(nullable = false, length = 255)
     private String password;
 
-    /**
-     * Admin can disable users/authors.
-     */
-    @Column(nullable = false)
-    @Builder.Default
-    private boolean enabled = true;
-
-    /**
-     * Optional but useful for security/abuse control (e.g., lock user after many failed logins).
-     */
     @Column(nullable = false)
     @Builder.Default
     private boolean accountNonLocked = true;
 
-    /**
-     * Simple roles model for Spring Security.
-     * Stored in a separate table: user_roles(user_id, role)
-     */
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "user_roles",
@@ -71,10 +53,8 @@ public class User extends TraceableEntity implements UserDetails {
     // -------------------------
     // Spring Security - UserDetails
     // -------------------------
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Spring Security expects roles in the form "ROLE_X"
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                 .collect(Collectors.toUnmodifiableSet());
@@ -82,13 +62,12 @@ public class User extends TraceableEntity implements UserDetails {
 
     @Override
     public String getUsername() {
-        // We use email as the login identifier
         return email;
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // can be extended later if needed
+        return true;
     }
 
     @Override
@@ -98,19 +77,6 @@ public class User extends TraceableEntity implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // can be extended later if needed
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    // -------------------------
-    // Convenience helpers (optional)
-    // -------------------------
-
-    public boolean hasRole(Role role) {
-        return roles != null && roles.contains(role);
+        return true;
     }
 }

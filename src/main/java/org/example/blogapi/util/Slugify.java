@@ -10,13 +10,8 @@ public final class Slugify {
     private static final Pattern WHITESPACE = Pattern.compile("[\\s]+");
 
     private Slugify() {
-        // utility class
     }
 
-    /**
-     * Convert a string into a URL-friendly slug.
-     * Example: "Spring Boot & Java 21" -> "spring-boot-java-21"
-     */
     public static String slugify(String input) {
         if (input == null || input.isBlank()) {
             return null;

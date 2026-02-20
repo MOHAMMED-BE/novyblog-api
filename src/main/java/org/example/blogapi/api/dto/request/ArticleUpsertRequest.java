@@ -24,11 +24,8 @@ public class ArticleUpsertRequest {
 
     private ArticleStatus status = ArticleStatus.DRAFT;
 
-    private Boolean enabled = true;
-
     // Optional category
     private Long categoryId;
 
-    // The file part name in FormData must be "thumbnail"
     private MultipartFile thumbnail;
 }

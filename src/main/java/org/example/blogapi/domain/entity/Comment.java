@@ -36,20 +36,4 @@ public class Comment extends TraceableEntity {
     @Column(nullable = false, length = 30)
     @Builder.Default
     private CommentStatus status = CommentStatus.VISIBLE;
-
-    /**
-     * Admin/moderation flag.
-     */
-    @Column(nullable = false)
-    @Builder.Default
-    private boolean enabled = true;
-
-    /**
-     * Optional: allow comment replies (threaded).
-     */
-    /*
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "fk_comment_parent"))
-    private Comment parent;
-    */
 }

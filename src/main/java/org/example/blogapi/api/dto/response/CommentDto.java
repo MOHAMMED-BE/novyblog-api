@@ -11,7 +11,6 @@ public record CommentDto(
         String userFullName,
         String content,
         CommentStatus status,
-        boolean enabled,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

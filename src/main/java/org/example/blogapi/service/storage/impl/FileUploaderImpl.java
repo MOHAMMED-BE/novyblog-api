@@ -16,7 +16,7 @@ import java.util.UUID;
 public class FileUploaderImpl implements FileUploader {
 
     private static final Set<String> ALLOWED_EXT = Set.of("jpg", "jpeg", "png", "webp");
-    private static final long MAX_BYTES = 5L * 1024 * 1024; // 5MB
+    private static final long MAX_BYTES = 5L * 1024 * 1024;
 
     private final UploadProperties props;
 
@@ -40,13 +40,11 @@ public class FileUploaderImpl implements FileUploader {
             throw new FileStorageException("Unsupported file type. Allowed: jpg, jpeg, png, webp");
         }
 
-        // Generate safe unique name
         String filename = UUID.randomUUID() + "." + ext;
 
         Path root = Path.of(props.rootDir()).toAbsolutePath().normalize();
         Path dir = root.resolve(relativeDir).normalize();
 
-        // Prevent path traversal
         if (!dir.startsWith(root)) {
             throw new FileStorageException("Invalid upload directory");
         }
@@ -62,7 +60,6 @@ public class FileUploaderImpl implements FileUploader {
             throw new FileStorageException("Could not store file", e);
         }
 
-        // Public URL (served by StaticResourceConfig)
         return props.publicBase() + "/" + relativeDir + "/" + filename;
     }
 

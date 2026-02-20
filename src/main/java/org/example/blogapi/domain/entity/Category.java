@@ -20,16 +20,6 @@ public class Category extends TraceableEntity {
     @Column(nullable = false, length = 120)
     private String name;
 
-    /**
-     * Used for SEO URLs: /category/{slug}
-     */
     @Column(nullable = false, length = 160)
     private String slug;
-
-    @Column(length = 500)
-    private String description;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private boolean enabled = true;
 }

@@ -23,8 +23,6 @@ public class JwtService {
     public JwtService(JwtProperties props) {
         this.props = props;
 
-        // HS256 requires a sufficiently long secret key.
-        // Your current secret is 32 chars => 32 bytes => 256 bits (OK for HS256).
         this.key = Keys.hmacShaKeyFor(props.secret().getBytes(StandardCharsets.UTF_8));
     }
 
@@ -37,7 +35,6 @@ public class JwtService {
                 .subject(user.getEmail())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(exp))
-                // optional, useful for debugging/UI
                 .claim("roles", user.getRoles().stream().map(Enum::name).toList())
                 .signWith(key, Jwts.SIG.HS256)
                 .compact();

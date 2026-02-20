@@ -30,21 +30,14 @@ public class SecurityConfig {
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
         var config = new org.springframework.web.cors.CorsConfiguration();
 
-        // ✅ Your React dev server origin(s)
         config.setAllowedOrigins(java.util.List.of(
                 "http://localhost:3020"
         ));
 
-        // ✅ Allow standard methods including OPTIONS (preflight)
         config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-
-        // ✅ Allow headers React typically sends
         config.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type"));
-
-        // ✅ If you ever send Authorization header back/need it exposed
         config.setExposedHeaders(java.util.List.of("Authorization"));
 
-        // If you use cookies, set true (for JWT Bearer in header, keep false)
         config.setAllowCredentials(false);
 
         var source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
@@ -54,7 +47,6 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService(UserRepository userRepository) {
-        // We authenticate by email
         return email -> userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new org.springframework.security.core.userdetails.UsernameNotFoundException(
                         "User not found for email: " + email
@@ -63,14 +55,9 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // BCrypt is a safe default for password hashing in Spring apps
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Spring Security 6+ (Boot 4) preferred: constructor-based provider
-     * (avoids setter issues and ensures provider is always valid).
-     */
     @Bean
     public AuthenticationProvider authenticationProvider(
             UserDetailsService userDetailsService,
@@ -81,9 +68,6 @@ public class SecurityConfig {
         return provider;
     }
 
-    /**
-     * Expose AuthenticationManager so it can be injected into services (e.g., AuthService).
-     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
@@ -97,10 +81,6 @@ public class SecurityConfig {
         return new JwtAuthenticationFilter(jwtService, userDetailsService);
     }
 
-    /**
-     * Prevent Spring Boot from registering this filter as a servlet container filter.
-     * We want it ONLY inside Spring Security filter chain (added via http.addFilterBefore).
-     */
     @Bean
     public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration(JwtAuthenticationFilter filter) {
         FilterRegistrationBean<JwtAuthenticationFilter> reg = new FilterRegistrationBean<>(filter);
@@ -149,7 +129,6 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // No form login / no http basic
         http.formLogin(form -> form.disable());
         http.httpBasic(basic -> basic.disable());
 

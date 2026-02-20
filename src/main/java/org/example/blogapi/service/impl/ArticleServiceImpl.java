@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @Transactional
@@ -41,14 +40,6 @@ public class ArticleServiceImpl implements ArticleService {
     private final UserRepository userRepository;
     private final ArticleMapper articleMapper;
     private final FileUploader fileUploader;
-
-    /*
-     public List<ArticleDto> findAll(Pageable pageable) {
-        return articleRepository.findAll(pageable)
-                .map(articleMapper::toDto)
-                .getContent();
-    }
-    */
 
     @Transactional(readOnly = true)
     @Override
@@ -86,10 +77,8 @@ public class ArticleServiceImpl implements ArticleService {
         entity.setExcerpt(req.getExcerpt());
         entity.setContent(req.getContent());
         entity.setKeywords(req.getKeywords());
-        entity.setEnabled(req.getEnabled() != null ? req.getEnabled() : true);
         entity.setStatus(req.getStatus() != null ? req.getStatus() : ArticleStatus.DRAFT);
 
-        // Slug from title
         String slug = Slugify.slugify(req.getTitle());
         if (slug == null) throw new RuntimeException("Slug could not be generated");
         if (articleRepository.existsBySlugIgnoreCase(slug)) {
@@ -99,23 +88,19 @@ public class ArticleServiceImpl implements ArticleService {
         }
         entity.setSlug(slug);
 
-        // Category optional
         if (req.getCategoryId() != null) {
             Category cat = categoryRepository.findById(req.getCategoryId())
                     .orElseThrow(() -> new RuntimeException("Category with id " + req.getCategoryId() + " not found"));
             entity.setCategory(cat);
         }
 
-        // Author required (resolved from SecurityContext)
         entity.setAuthor(getCurrentUserOrThrow());
 
-        // Upload thumbnail if provided
         if (req.getThumbnail() != null && !req.getThumbnail().isEmpty()) {
             String url = fileUploader.upload(req.getThumbnail(), THUMB_DIR);
             entity.setThumbnailUrl(url);
         }
 
-        // Set publishedAt if status becomes PUBLISHED
         applyPublishedAt(entity);
 
         Article saved = articleRepository.save(entity);
@@ -133,23 +118,19 @@ public class ArticleServiceImpl implements ArticleService {
         existing.setExcerpt(req.getExcerpt());
         existing.setContent(req.getContent());
         existing.setKeywords(req.getKeywords());
-        existing.setEnabled(req.getEnabled() != null ? req.getEnabled() : existing.isEnabled());
         existing.setStatus(req.getStatus() != null ? req.getStatus() : existing.getStatus());
 
-        // Slug derived from title
         String newSlug = Slugify.slugify(req.getTitle());
         if (newSlug == null) throw new RuntimeException("Slug could not be generated");
 
         if (!newSlug.equalsIgnoreCase(existing.getSlug())
                 && articleRepository.existsBySlugIgnoreCase(newSlug)) {
-            // ✅ IMPORTANT: use the same domain exception as create()
             throw new ArticleAlreadyExistsException(
                     "Article with slug '" + newSlug + "' already exists"
             );
         }
         existing.setSlug(newSlug);
 
-        // Category optional
         if (req.getCategoryId() == null) {
             existing.setCategory(null);
         } else {
@@ -158,7 +139,6 @@ public class ArticleServiceImpl implements ArticleService {
             existing.setCategory(cat);
         }
 
-        // Thumbnail optional update
         if (req.getThumbnail() != null && !req.getThumbnail().isEmpty()) {
             String url = fileUploader.upload(req.getThumbnail(), THUMB_DIR);
             existing.setThumbnailUrl(url);

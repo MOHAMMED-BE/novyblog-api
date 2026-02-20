@@ -37,7 +37,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        // No JWT -> continue (public endpoints still work)
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -45,13 +44,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring("Bearer ".length()).trim();
 
-        // If token is invalid, return 401 (fail fast)
         if (!jwtService.isValid(token)) {
             writeUnauthorized(response, "Invalid or expired token");
             return;
         }
 
-        // Avoid overriding an existing Authentication
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             String email = jwtService.extractSubject(token);
 

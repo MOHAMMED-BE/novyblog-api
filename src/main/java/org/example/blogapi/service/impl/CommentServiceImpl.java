@@ -40,7 +40,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     public List<CommentDto> findByArticle(Long articleId, Pageable pageable) {
         return commentRepository
-                .findByArticleIdAndEnabledTrueAndStatus(articleId, CommentStatus.VISIBLE, pageable)
+                .findByArticleIdAndStatus(articleId, CommentStatus.VISIBLE, pageable)
                 .map(commentMapper::toDto)
                 .getContent();
     }
@@ -65,7 +65,6 @@ public class CommentServiceImpl implements CommentService {
         entity.setUser(current);
         entity.setContent(req.content());
         entity.setStatus(CommentStatus.VISIBLE);
-        entity.setEnabled(true);
 
         Comment saved = commentRepository.save(entity);
         return commentMapper.toDto(saved);
@@ -95,9 +94,8 @@ public class CommentServiceImpl implements CommentService {
 
         ensureOwnerOrAdmin(existing);
 
-        // Soft-delete (recommended for audit/moderation)
+        // Soft-delete
         existing.setStatus(CommentStatus.DELETED);
-        existing.setEnabled(false);
 
         commentRepository.save(existing);
     }

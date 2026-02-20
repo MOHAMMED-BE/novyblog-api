@@ -20,28 +20,18 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    /**
-     * GET /api/categories
-     * List categories with pagination & sorting
-     */
     @GetMapping
     public ResponseEntity<List<CategoryDto>> findAll(Pageable pageable) {
         log.info("REST request to get all Categories - page {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
         return ResponseEntity.ok(categoryService.findAll(pageable));
     }
 
-    /**
-     * GET /api/categories/{id}
-     */
     @GetMapping("/{id}")
     public ResponseEntity<CategoryDto> findById(@PathVariable Long id) {
         log.info("REST request to get Category {}", id);
         return ResponseEntity.ok(categoryService.findById(id));
     }
 
-    /**
-     * POST /api/categories
-     */
     @PostMapping
     public ResponseEntity<CategoryDto> create(@Valid @RequestBody CategoryDto dto) {
         CategoryDto created = categoryService.create(dto);

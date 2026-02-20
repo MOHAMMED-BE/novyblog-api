@@ -1,4 +1,3 @@
-// src/main/java/org/example/blogapi/service/impl/CategoryServiceImpl.java
 package org.example.blogapi.service.impl;
 
 import lombok.RequiredArgsConstructor;
@@ -44,7 +43,6 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto create(CategoryDto dto) {
         Category entity = categoryMapper.toEntity(dto);
 
-        // 🔹 ALWAYS generate slug from name
         String slug = Slugify.slugify(dto.getName());
 
         if (categoryRepository.existsBySlugIgnoreCase(slug)) {
@@ -66,7 +64,6 @@ public class CategoryServiceImpl implements CategoryService {
                         new CategoryNotFoundException("Category with id " + id + " not found")
                 );
 
-        // 🔹 Slug is derived from name
         String newSlug = Slugify.slugify(dto.getName());
 
         if (!newSlug.equalsIgnoreCase(existing.getSlug())
@@ -78,12 +75,9 @@ public class CategoryServiceImpl implements CategoryService {
 
         existing.setName(dto.getName());
         existing.setSlug(newSlug);
-        existing.setDescription(dto.getDescription());
-        existing.setEnabled(dto.isEnabled());
 
         return categoryMapper.toDto(categoryRepository.save(existing));
     }
-
 
     @Override
     public void delete(Long id) {

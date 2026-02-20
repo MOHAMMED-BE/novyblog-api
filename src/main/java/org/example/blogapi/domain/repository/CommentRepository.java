@@ -8,8 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    // Public listing: only visible + enabled comments
-    Page<Comment> findByArticleIdAndEnabledTrueAndStatus(
+    Page<Comment> findByArticleIdAndStatus(
             Long articleId,
             CommentStatus status,
             Pageable pageable

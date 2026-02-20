@@ -14,7 +14,6 @@ public record ArticleDto(
         String thumbnailUrl,
         ArticleStatus status,
         LocalDateTime publishedAt,
-        boolean enabled,
         Long authorId,
         Long categoryId
 ) {
