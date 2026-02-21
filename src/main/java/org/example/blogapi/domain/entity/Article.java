@@ -26,10 +26,10 @@ import java.time.LocalDateTime;
 @Builder
 public class Article extends TraceableEntity {
 
-    @Column(nullable = false, length = 220)
+    @Column(nullable = false, length = 250)
     private String title;
 
-    @Column(nullable = false, length = 260)
+    @Column(nullable = false, length = 250)
     private String slug;
 
     @Column(length = 600)

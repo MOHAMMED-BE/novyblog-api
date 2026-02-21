@@ -1,7 +1,9 @@
 package org.example.blogapi.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.example.blogapi.api.dto.request.ArticleCriteria;
 import org.example.blogapi.api.dto.request.ArticleUpsertRequest;
+import org.example.blogapi.api.dto.request.MyArticleCriteria;
 import org.example.blogapi.api.dto.response.ArticleDto;
 import org.example.blogapi.domain.entity.Article;
 import org.example.blogapi.domain.entity.Category;
@@ -12,6 +14,7 @@ import org.example.blogapi.domain.repository.CategoryRepository;
 import org.example.blogapi.domain.repository.UserRepository;
 import org.example.blogapi.domain.spec.ArticleSpecifications;
 import org.example.blogapi.mapper.ArticleMapper;
+import org.example.blogapi.security.CurrentUserService;
 import org.example.blogapi.service.ArticleService;
 import org.example.blogapi.service.exceptions.ArticleAlreadyExistsException;
 import org.example.blogapi.service.exceptions.ArticleNotFoundException;
@@ -19,10 +22,7 @@ import org.example.blogapi.service.storage.FileUploader;
 import org.example.blogapi.util.Slugify;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,11 +40,24 @@ public class ArticleServiceImpl implements ArticleService {
     private final UserRepository userRepository;
     private final ArticleMapper articleMapper;
     private final FileUploader fileUploader;
+    private final CurrentUserService currentUserService;
 
     @Transactional(readOnly = true)
     @Override
-    public Page<ArticleDto> findAll(Long id, ArticleStatus status, String slug, String name, String keywords, String categoryName, Pageable pageable) {
-        var spec = ArticleSpecifications.withFilters(id, status, slug, name, keywords, categoryName);
+    public Page<ArticleDto> findAll(ArticleCriteria criteria, Pageable pageable) {
+        var spec = ArticleSpecifications.withFilters(criteria);
+        return articleRepository.findAll(spec, pageable).map(articleMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<ArticleDto> findMyArticles(Long authorId, MyArticleCriteria criteria, Pageable pageable) {
+        User me = currentUserService.getCurrentUserOrThrow();
+
+        var spec = Specification
+                .where(ArticleSpecifications.withAuthorId(me.getId()))
+                .and(ArticleSpecifications.withFilters(criteria));
+
         return articleRepository.findAll(spec, pageable).map(articleMapper::toDto);
     }
 
@@ -94,7 +107,7 @@ public class ArticleServiceImpl implements ArticleService {
             entity.setCategory(cat);
         }
 
-        entity.setAuthor(getCurrentUserOrThrow());
+        entity.setAuthor(currentUserService.getCurrentUserOrThrow());
 
         if (req.getThumbnail() != null && !req.getThumbnail().isEmpty()) {
             String url = fileUploader.upload(req.getThumbnail(), THUMB_DIR);
@@ -166,30 +179,4 @@ public class ArticleServiceImpl implements ArticleService {
         }
     }
 
-    private User getCurrentUserOrThrow() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
-            throw new RuntimeException("Unauthenticated request");
-        }
-
-        Object principal = auth.getPrincipal();
-
-        if (principal instanceof User u) {
-            return u;
-        }
-
-        if (principal instanceof UserDetails ud) {
-            String email = ud.getUsername();
-            return userRepository.findByEmailIgnoreCase(email)
-                    .orElseThrow(() -> new RuntimeException("Authenticated user not found in DB: " + email));
-        }
-
-        if (principal instanceof String email) {
-            return userRepository.findByEmailIgnoreCase(email)
-                    .orElseThrow(() -> new RuntimeException("Authenticated user not found in DB: " + email));
-        }
-
-        throw new RuntimeException("Unsupported principal type: " + principal.getClass().getName());
-    }
 }

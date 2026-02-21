@@ -3,10 +3,12 @@ package org.example.blogapi.api.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.blogapi.api.dto.request.ArticleCriteria;
 import org.example.blogapi.api.dto.request.ArticleUpsertRequest;
 import org.example.blogapi.api.dto.response.ArticleDto;
 import org.example.blogapi.domain.enums.ArticleStatus;
 import org.example.blogapi.service.ArticleService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,16 +25,11 @@ public class ArticleController {
     private final ArticleService articleService;
 
     @GetMapping
-    public ResponseEntity<org.springframework.data.domain.Page<ArticleDto>> findAll(
-            @RequestParam(required = false) Long id,
-            @RequestParam(required = false) String slug,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String keywords,
-            @RequestParam(required = false) String categoryName,
-            @RequestParam(required = false) ArticleStatus status,
+    public ResponseEntity<Page<ArticleDto>> findAll(
+            ArticleCriteria criteria,
             Pageable pageable
     ) {
-        return ResponseEntity.ok(articleService.findAll(id, status, slug, name, keywords, categoryName, pageable));
+        return ResponseEntity.ok(articleService.findAll(criteria, pageable));
     }
 
     @GetMapping("/{id}")
